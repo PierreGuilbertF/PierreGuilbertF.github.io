@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Projects and Software | Pierre Guilbert</title>
+    <meta name="author" content="Pierre Guilbert">
+    <meta name="description" content="Preprints, patents, publications and open-source software contributions by Pierre Guilbert.">
+    <link rel="stylesheet" href="cv.css">
+    <style>
+      .research-heading { display: block; }
+      .research-heading .headline { margin-bottom: 32px; }
+      .research-list { list-style: none; margin: 0; padding: 0; }
+      .research-list li { margin: 0; padding: 20px 0; border-bottom: 1px solid #c8d4d5; }
+      .research-list li:first-child { padding-top: 0; }
+      .research-list a { font-size: 1.15rem; line-height: 1.5; }
+      .research-type { display: block; margin-top: 6px; color: #58636b; font: .8rem/1.6 system-ui, sans-serif; }
+      .software p { max-width: 75ch; }
+      .software-links { display: flex; flex-wrap: wrap; gap: 24px; font: .9rem/1.6 system-ui, sans-serif; }
+      .software-gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+      .software-gallery figure { margin: 0; }
+      .software-gallery img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: contain; background: #e8ecec; border-radius: 4px; }
+      .software-gallery figcaption, .visual-credit { color: #58636b; font: .75rem/1.6 system-ui, sans-serif; margin-top: 8px; }
+      @media (max-width: 650px) { .software-gallery { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav aria-label="Page navigation"><a href="index.html">← Home</a><a href="cv.html">Curriculum Vitae</a></nav>
+      <header class="research-heading">
+        <p class="eyebrow">Pierre Guilbert</p>
+        <h1>Projects and Software</h1>
+        <p class="headline">Research and open-source software</p>
+      </header>
+      <h2>Research</h2>
+      <ol class="research-list" aria-label="Research works">
+        <li>
+          <a href="https://pierreguilbertf.github.io/flow-matching-optimal-transport/index.html">Flow Matching and Optimal Transport: An Illustrated Introduction to Wasserstein–Otto Geometry</a>
+          <span class="research-type">Preprint</span>
+        </li>
+        <li>
+          <a href="https://pierreguilbertf.github.io/fisher-rao-wasserstein-atlas/">Fisher–Rao and Wasserstein–Otto Geometries of Parametric Probability Families: A Comparative Atlas</a>
+          <span class="research-type">Preprint</span>
+        </li>
+        <li>
+          <a href="https://pierreguilbertf.github.io/pullback-fisher-rao-atlas/">Pullback Fisher–Rao Geometries of Parametric Probability Families: An Expository Atlas</a>
+          <span class="research-type">Preprint</span>
+        </li>
+        <li>
+          <a href="https://scholar.google.com/citations?view_op=view_citation&amp;hl=fr&amp;user=tEL2NXMAAAAJ&amp;citation_for_view=tEL2NXMAAAAJ:UeHWp8X0CEIC">Automatic alignment of video streams</a>
+          <span class="research-type">Patent</span>
+        </li>
+        <li>
+          <a href="https://scholar.google.com/citations?view_op=view_citation&amp;hl=fr&amp;user=tEL2NXMAAAAJ&amp;citation_for_view=tEL2NXMAAAAJ:qjMakFHDy7sC">Method for estimating an orientation change characteristic</a>
+          <span class="research-type">Patent</span>
+        </li>
+        <li>
+          <a href="https://scholar.google.com/citations?view_op=view_citation&amp;hl=fr&amp;user=tEL2NXMAAAAJ&amp;citation_for_view=tEL2NXMAAAAJ:u-x6o8ySG0sC">How simulating exposure time variations in the LIP model. Application: moving objects acquisition</a>
+          <span class="research-type">Publication</span>
+        </li>
+        <li>
+          <a href="https://scholar.google.com/citations?view_op=view_citation&amp;hl=fr&amp;user=tEL2NXMAAAAJ&amp;citation_for_view=tEL2NXMAAAAJ:u5HHmVD_uO8C">Colour contrasts and associated metrics defined in the LIP framework. Generated neighbourhoods in the (x, y)-space</a>
+          <span class="research-type">Publication</span>
+        </li>
+      </ol>
+      <section class="software" aria-labelledby="software-heading">
+        <h2 id="software-heading">Software</h2>
+        <article>
+          <h3 id="lidarview"><a href="https://lidarview.kitware.com/">LidarView</a></h3>
+          <p>LidarView brings camera images and 3D lidar point clouds together for visualization and processing, with tools for calibration, sensor fusion and SLAM.</p>
+          <p>During my time at Kitware, I was one of the main developers of LidarView alongside Bastien Jacquet. Together, we developed the first VeloView lidar API and camera–lidar calibration and sensor fusion algorithms, as well as lidar SLAM and camera SLAM.</p>
+          <p>This open-source software continues to be maintained and improved by Kitware’s computer vision team.</p>
+          <div class="software-links">
+            <a href="https://lidarview.kitware.com/">Project website</a>
+            <a href="https://gitlab.kitware.com/LidarView/lidarview">Source code</a>
+          </div>
+          <div class="software-gallery">
+            <figure><a href="https://lidarview.kitware.com/"><img src="assets/lidarview/data-visualization.jpg" alt="LidarView displaying a 3D lidar point cloud" loading="lazy"></a><figcaption>Point-cloud visualization</figcaption></figure>
+            <figure><a href="https://lidarview.kitware.com/"><img src="assets/lidarview/slam-car.gif" alt="Animated demonstration of lidar SLAM from a moving vehicle" loading="lazy"></a><figcaption>Lidar SLAM</figcaption></figure>
+            <figure><a href="https://lidarview.kitware.com/"><img src="assets/lidarview/office.jpg" alt="Top view of an office reconstructed from lidar measurements" loading="lazy"></a><figcaption>Indoor 3D reconstruction</figcaption></figure>
+          </div>
+          <p class="visual-credit">Visuals: <a href="https://lidarview.kitware.com/">Kitware / LidarView</a>.</p>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
