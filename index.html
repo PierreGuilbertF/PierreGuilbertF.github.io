@@ -19,7 +19,7 @@
       main {
         max-width: 960px;
         margin: 0 auto;
-        padding: clamp(64px, 12vw, 140px) 28px;
+        padding: clamp(28px, 5vw, 56px) 28px 64px;
       }
       h1 {
         margin: 0;
@@ -31,16 +31,37 @@
       .profile-photo { float: right; width: clamp(96px, 20vw, 160px); height: auto; margin: 0 0 24px 24px; border-radius: 6px; }
       @media (max-width: 500px) { .profile-photo { float: none; display: block; margin: 0 0 28px; } }
       .headline { color: #235d69; font-size: 1.2rem; line-height: 1.6; margin: 22px 0; }
+      .introduction { clear: both; max-width: 75ch; font-size: 1.1rem; line-height: 1.75; margin-top: 32px; }
+      .introduction p { margin: 0 0 16px; }
       nav { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 32px; font: 1rem/1.6 system-ui, sans-serif; }
       a { color: #235d69; text-underline-offset: .2em; }
       a:focus-visible { outline: 2px solid #235d69; outline-offset: 4px; }
+      .banner { margin: 0 0 16px; }
+      .banner img { display: block; width: 100%; height: auto; aspect-ratio: 2.4; object-fit: cover; object-position: center 20%; border-radius: 4px; }
+      .banner figcaption { margin-top: 6px; text-align: right; color: #58636b; font: .6875rem/1.5 system-ui, sans-serif; }
+      .poem { margin: 0 0 40px; text-align: center; color: #43545b; }
+      .poem blockquote { margin: 0; font-size: 1rem; font-style: italic; line-height: 1.85; }
+      .poem figcaption { margin-top: 6px; font: .8rem/1.6 system-ui, sans-serif; }
+      @media (max-width: 500px) { .banner img { aspect-ratio: 1.7; } .poem blockquote { font-size: .9rem; } }
     </style>
   </head>
   <body>
     <main>
+      <figure class="banner">
+        <img src="lavaux.png" alt="Golden vineyards of Lavaux above Lake Geneva, with mountains across the water" width="2290" height="1348" fetchpriority="high">
+        <figcaption>Picture by: <strong>Olivier Rentsch.</strong></figcaption>
+      </figure>
+      <figure class="poem">
+        <blockquote lang="fr">Le vent se lève !… Il faut tenter de vivre !</blockquote>
+        <figcaption>Paul Valéry, <cite lang="fr">Le Cimetière marin</cite></figcaption>
+      </figure>
       <img class="profile-photo" src="profile_picture.png" alt="Portrait of Pierre Guilbert" width="836" height="852">
       <h1>Pierre Guilbert</h1>
       <p class="headline">Computer Vision, Machine Learning &amp; Mathematical Modelling</p>
+      <section class="introduction" aria-label="About me">
+        <p>I am a French computer vision engineer based in Lausanne, Switzerland, with 10 years of experience in computer vision, machine learning and mathematical modelling. I currently work at Genius Sports to enhance how we observe and understand sports.</p>
+        <p>My interests lie in probability theory, geometry and nonlinear optimization, especially in turning mathematical ideas into practical solutions. I enjoy working with others on challenging problems where theory and practice intersect.</p>
+      </section>
       <nav aria-label="Main navigation">
         <a href="cv.html">Curriculum Vitae</a>
         <a href="output/pdf/cv.pdf">Download CV (PDF)</a>
