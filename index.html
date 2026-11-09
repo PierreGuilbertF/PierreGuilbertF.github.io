@@ -28,11 +28,23 @@
         line-height: 1.15;
         letter-spacing: -0.025em;
       }
+      .profile-photo { float: right; width: clamp(96px, 20vw, 160px); height: auto; margin: 0 0 24px 24px; border-radius: 6px; }
+      @media (max-width: 500px) { .profile-photo { float: none; display: block; margin: 0 0 28px; } }
+      .headline { color: #235d69; font-size: 1.2rem; line-height: 1.6; margin: 22px 0; }
+      nav { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 32px; font: 1rem/1.6 system-ui, sans-serif; }
+      a { color: #235d69; text-underline-offset: .2em; }
+      a:focus-visible { outline: 2px solid #235d69; outline-offset: 4px; }
     </style>
   </head>
   <body>
     <main>
+      <img class="profile-photo" src="profile_picture.png" alt="Portrait of Pierre Guilbert" width="836" height="852">
       <h1>Pierre Guilbert</h1>
+      <p class="headline">Computer Vision, Machine Learning &amp; Mathematical Modelling</p>
+      <nav aria-label="Main navigation">
+        <a href="cv.html">Curriculum Vitae</a>
+        <a href="output/pdf/cv.pdf">Download CV (PDF)</a>
+      </nav>
     </main>
   </body>
 </html>

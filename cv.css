@@ -1,0 +1,39 @@
+:root { color-scheme: light; --accent: #235d69; --ink: #202b35; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #faf9f6; color: var(--ink); border-top: 4px solid var(--accent); font: 17px/1.65 Georgia, "Times New Roman", serif; }
+main { max-width: 960px; margin: auto; padding: 32px 28px 64px; }
+a { color: var(--accent); text-underline-offset: .2em; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+nav, nav div { display: flex; align-items: center; gap: 24px; }
+nav { justify-content: space-between; font: 14px/1.5 system-ui, sans-serif; margin-bottom: 58px; }
+header { display: flex; flex-direction: row-reverse; align-items: flex-start; gap: 28px; }
+.header-copy { flex: 1; min-width: 0; }
+.profile-photo { width: 128px; height: auto; border-radius: 6px; }
+.eyebrow { font: 12px/1.5 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .17em; color: var(--accent); margin-bottom: 12px; }
+h1 { font-size: clamp(2.6rem, 7vw, 4rem); font-weight: 400; line-height: 1.15; letter-spacing: -.025em; margin: 0; }
+.headline { color: var(--accent); font-size: 20px; margin: 12px 0 20px; }
+address { display: flex; flex-wrap: wrap; gap: 4px 20px; font: normal 14px/1.7 system-ui, sans-serif; }
+.summary { margin: 30px 0 38px; max-width: 80ch; }
+.summary p { margin: 0 0 12px; }
+h2 { font: 500 19px/1.4 system-ui, sans-serif; color: var(--accent); border-bottom: 1px solid #c8d4d5; padding-bottom: 8px; margin: 36px 0 20px; }
+h3 { font: 600 17px/1.5 system-ui, sans-serif; margin: 0; }
+h3 span { display: block; font-weight: 400; }
+.job { margin-bottom: 24px; }
+.job-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; }
+.job-heading p { margin: 0; font: 14px/1.5 system-ui, sans-serif; white-space: nowrap; }
+ul { margin: 10px 0 0; padding-left: 21px; }
+li { padding-left: 3px; margin: 4px 0; }
+dl { margin: 0; }
+dl > div { display: grid; grid-template-columns: 205px 1fr; gap: 20px; margin: 10px 0; }
+dt { font-weight: bold; } dd { margin: 0; }
+.education { list-style: none; padding: 0; }
+.education li { display: flex; justify-content: space-between; gap: 20px; padding: 0; margin: 12px 0; }
+.education span { display: block; }
+time { font: 14px/1.7 system-ui, sans-serif; }
+footer { border-top: 1px solid #c8d4d5; margin-top: 40px; padding-top: 20px; font: 14px/1.5 system-ui, sans-serif; }
+@media (max-width: 600px) { main { padding: 24px 20px 40px; } nav { margin-bottom: 38px; gap: 12px; } nav div { gap: 14px; } .job-heading { display: block; } .job-heading p { margin-top: 6px; } dl > div { grid-template-columns: 1fr; gap: 0; margin: 16px 0; } .headline { font-size: 18px; } }
+@media print { body { background: white; border: 0; font-size: 10pt; line-height: 1.35; } main { max-width: none; padding: 0; } nav, footer, .eyebrow { display: none; } h1 { font-size: 26pt; } .headline { font-size: 12pt; } h2 { margin: 16px 0 8px; font-size: 12pt; } .summary { margin: 15px 0; } .job { margin-bottom: 12px; break-inside: avoid; } a { text-decoration: none; } dl > div { margin: 5px 0; } @page { size: A4; margin: 14mm; } }
+
+@media (max-width: 600px) { header { flex-direction: column; gap: 16px; } .profile-photo { width: 96px; } }
+@media print { .profile-photo { width: 28mm; } }

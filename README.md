@@ -1,11 +1,28 @@
 # Pierre Guilbert
 
-Minimal personal website for https://pierreguilbertf.github.io/.
+Personal website for https://pierreguilbertf.github.io/.
+
+- `index.html`: homepage, linking to the CV and downloadable PDF.
+- `cv.html` and `cv.css`: responsive HTML CV.
+- `cv.tex`: standalone LaTeX source.
+- `output/pdf/cv.pdf`: PDF compiled from the LaTeX source.
+- `data/cv.json`: shared content for the HTML and LaTeX versions.
+
+## Update the CV
+
+Edit `data/cv.json`, then run:
+
+```sh
+python3 scripts/build_cv.py
+tectonic cv.tex --outdir output/pdf
+```
+
+The generator uses only Python's standard library. Compilation requires
+[Tectonic](https://tectonic-typesetting.github.io/), which downloads LaTeX
+packages on its first run. Commit the regenerated HTML, LaTeX, and PDF together.
 
 ## Publish
 
-Copy these files into the `PierreGuilbertF.github.io` repository. In GitHub,
-open **Settings → Pages**, choose **Deploy from a branch**, then **main**
-and **/(root)**, and save.
-
-The page contains only the name Pierre Guilbert. Edit `index.html` to update it.
+Push changes to the branch configured in GitHub Pages. In GitHub, open
+**Settings → Pages**, choose **Deploy from a branch**, then **main** and
+**/(root)**. The site needs no build step.
