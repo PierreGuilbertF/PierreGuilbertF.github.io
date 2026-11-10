@@ -1,0 +1,26 @@
+.note-header { display: block; margin-bottom: 40px; }
+.note-header h1 { font-size: clamp(1.9rem, 4.6vw, 3rem); line-height: 1.2; max-width: 28ch; }
+.byline { margin: 20px 0 12px; font-size: .95rem; }
+.downloads { display: flex; flex-wrap: wrap; gap: 24px; font: .85rem/1.6 system-ui, sans-serif; }
+article > p { margin: 18px 0; }
+article > h2 { margin-top: 42px; }
+article > h3 { font-size: 1.1rem; margin: 30px 0 16px; }
+figure { margin: 28px 0; text-align: center; }
+figure img, video { display: block; width: 100%; max-width: 100%; height: auto; margin: 12px auto; border-radius: 3px; }
+figure p { margin: 8px 0; }
+figure p a + a { margin-left: 18px; }
+figure img[style] { max-width: 100%; }
+figcaption { font-size: .9rem; line-height: 1.6; text-align: left; color: #43545b; margin-top: 12px; }
+figcaption strong { color: #235d69; }
+.video-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin: 24px 0 36px; }
+.video-grid h3 { font: 500 .9rem/1.5 system-ui,sans-serif; }
+.math.display { display: block; overflow-x: auto; overflow-y: hidden; padding: 8px 0; }
+mjx-container[display="true"] { min-width: min-content; }
+.bibliography { font-size: .9rem; line-height: 1.65; padding-left: 26px; }
+.bibliography li { margin: 14px 0; padding-left: 5px; }
+.bibliography a { overflow-wrap: anywhere; }
+.footnotes { font-size: .9rem; margin-top: 36px; }
+:target { scroll-margin-top: 24px; }
+.bibliography li:has(:target) { background: #eaf0ef; }
+@media (max-width: 650px) { .video-grid { grid-template-columns: 1fr; } main { padding-left: 20px; padding-right: 20px; } }
+@media print { .downloads { display: none; } .note-header { margin-bottom: 24px; } .video-grid { display: none; } }

@@ -1,0 +1,523 @@
+% !TEX root = FlowMatchingOverfitting.tex
+%% Pierre Guilbert -- short note skeleton.
+
+\documentclass[11pt,reqno,a4paper]{amsart}
+
+%% ----- Encoding & fonts -----
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+%% ----- Language -----
+\usepackage[english]{babel}
+
+%% ----- Mathematics -----
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{mathrsfs}
+
+%% ----- Hyperlinks -----
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
+\usepackage{orcidlink}
+
+%% ----- Graphics -----
+\usepackage{graphicx}
+\graphicspath{{../}{./}}
+\usepackage{float}    %% provides the [H] placement specifier
+
+%% ----- Lists (compact spacing) -----
+\usepackage{enumitem}
+
+\usepackage{placeins}
+
+%% ----- Section heading style (amsart-compatible; titlesec is incompatible
+%%       with amsart, so we redefine via the low-level \@startsection macro) -----
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{1}{0pt}%
+  {3.5ex plus 1ex minus .2ex}%
+  {1.8ex plus .2ex}%
+  {\normalfont\LARGE\bfseries\color{black}}}
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
+  {2.5ex plus .8ex minus .2ex}%
+  {1.2ex plus .2ex}%
+  {\normalfont\Large\bfseries\color{black}}}
+\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{0pt}%
+  {1.8ex plus .6ex minus .2ex}%
+  {0.9ex plus .2ex}%
+  {\normalfont\large\bfseries\color{black}}}
+
+%% amsart prints author names through \MakeUppercase by default, which renders
+%% as "PIERRE GUILBERT". We override \@setauthors to keep the author name in its
+%% original (mixed-case) form while preserving amsart's centered layout.
+\renewcommand{\@setauthors}{%
+  \begingroup
+    \def\thanks{\protect\thanks@warning}%
+    \trivlist
+    \centering\footnotesize \@topsep30\p@\relax
+    \advance\@topsep by -\baselineskip
+    \item\relax
+    \author@andify\authors
+    \def\\{\protect\linebreak}%
+    \authors
+    \par\endtrivlist
+  \endgroup
+}
+\makeatother
+
+%% ----- Theorem environments -----
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+%% ----- Operators -----
+\DeclareMathOperator{\Mat}{Mat}
+\DeclareMathOperator{\Hess}{Hess}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\Ima}{Im}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\dive}{div}
+
+%% ----- Shortcuts -----
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\KL}{D_{\mathrm{KL}}}
+\newcommand{\LL}{\mathcal{L}}
+\newcommand{\Ppos}{\mathcal{P}_{+}}
+\newcommand{\Mman}{\mathcal{M}}
+\newcommand{\Tm}{T\mathcal{M}}
+\newcommand{\FR}{\mathrm{FR}}
+\newcommand{\inner}[1]{\left\langle #1 \right\rangle}
+
+%% Key identities. Use inside a display: \[ \keyformula{...} \]
+\newcommand{\keyformula}[1]{\boxed{\,#1\,}}
+
+%% ----- Metadata -----
+%% The title concerns the behaviour illustrated here, not every generative model.
+\title[Flow Matching Without Double Descent]
+{When Generative Models Do Not Exhibit Double Descent: A Flow Matching Example}
+
+\author{Pierre Guilbert\orcidlink{0009-0002-1582-4435}}
+\thanks{\textit{Email}: \texttt{spguilbert@gmail.com}}
+\email{spguilbert@gmail.com}
+
+\date{\today}
+
+\begin{document}
+
+\begin{abstract}
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+\label{sec:introduction}
+
+Generative modelling is a field of machine learning that aims at
+approximating an unknown data distribution, with density
+$p_{\mathrm{data}}$, from a finite set of independent samples
+$(x_1,\ldots,x_N)\in E^N$, where $E=\RR^d$. Methods include generative
+adversarial networks (GANs)~\cite{GoodfellowEtAl2014} and variational
+autoencoders~\cite{KingmaWelling2014}.
+Diffusion models~\cite{HoEtAl2020,SongEtAl2021} and Flow
+Matching~\cite{LipmanEtAl2023} tackle modelling and sampling together by
+learning an evolution from a simple initial distribution to the data
+distribution. We are interested here in Flow Matching.
+
+
+\begin{figure}[H]
+\centering
+\href{run:overfit/figures/spiral_flow_matching_online_975_particles.mp4}{%
+\includegraphics[width=\textwidth]{overfit/figures/spiral_online_note_preview.pdf}}
+\par\smallskip
+{\small\href{run:overfit/figures/spiral_flow_matching_online_975_particles.mp4}{Open the particle video (MP4)}}
+\caption{Gaussian-to-spiral transport learnt with fresh training samples.
+The video follows 975 particles; click the preview to open the accompanying
+MP4. The example is described in Section~\ref{sec:visualisation}.}
+\label{fig:online-spiral-video}
+\end{figure}
+
+Let $p_{\mathrm{init}}$ be the initial density, and let
+$Z\sim p_{\mathrm{init}}$ and $X\sim p_{\mathrm{data}}$ be independent.
+We consider the path of random variables
+\begin{equation}\label{eq:overfit-interpolation}
+X_t=tX+(1-t)Z,\qquad 0\leq t\leq 1.
+\end{equation}
+For $0<t<1$, its density $p_t$ is the convolution of the data and initial
+densities contracted by $t$ and $1-t$, respectively
+\cite{Guilbert2026FlowMatching}:
+\begin{equation}\label{eq:overfit-convolution}
+p_t=
+\left[\frac{1}{t^d}p_{\mathrm{data}}\!\left(\frac{\cdot}{t}\right)\right]
+*\left[\frac{1}{(1-t)^d}p_{\mathrm{init}}\!\left(\frac{\cdot}{1-t}\right)\right].
+\end{equation}
+Flow Matching consists in learning a velocity field
+$v_\theta:[0,1]\times E\to E$ to transport $p_{\mathrm{init}}$ to
+$p_{\mathrm{data}}$. The target velocity $v_t$ and the density path are
+linked by the continuity equation~\cite{LipmanEtAl2023,Guilbert2026FlowMatching}:
+\begin{equation}\label{eq:overfit-continuity}
+\partial_t p_t=-\dive(p_t v_t).
+\end{equation}
+Sampling from the learnt distribution is then performed using a classical
+numerical integration solver, such as Euler or Runge--Kutta, applied to the
+learnt velocity vector field with initial samples drawn from
+$p_{\mathrm{init}}$.
+
+\section{Double descent and memorisation}
+\label{sec:double-descent}
+
+In supervised machine learning, it has been shown that, under some
+conditions, increasing model capacity can lead to a \emph{double-descent}
+learning curve~\cite{BelkinEtAl2019,NakkiranEtAl2020}. The test error first
+decreases, increases near the interpolation threshold, where the model has
+enough capacity to fit the training samples, and decreases again for
+larger models. Nakkiran et al.~\cite{NakkiranEtAl2020} also observe double
+descent with longer training of a fixed ResNet18 on CIFAR-10 with label
+noise. Figure~\ref{fig:supervised-double-descent} illustrates both cases.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth,trim=0 0 505.5bp 0,clip]{overfit/figures/references/nakkiran_model_double_descent.png}
+\par\smallskip
+\includegraphics[width=0.8\textwidth]{overfit/figures/references/nakkiran_epoch_double_descent.png}
+\caption{Double descent for ResNet18 models on CIFAR-10 with label noise.
+Top: increasing model width. Bottom: increasing training time for fixed
+architectures. Panels reproduced from Figures~1 (left) and~9 (left) of
+Nakkiran et al.~\cite{NakkiranEtAl2020}.}
+\label{fig:supervised-double-descent}
+\end{figure}
+\FloatBarrier
+
+Recent research on diffusion models reports a different behaviour.
+Farghly et al.~\cite{FarghlyEtAl2026} derive, in their analysis, a U-shaped
+test loss as a function of model capacity. Urfin et
+al.~\cite{UrfinEtAl2026} find that increasing capacity can drive
+unregularised models towards memorisation. Along the training-time axis,
+Bonnaire et al.~\cite{BonnaireEtAl2025Memorization} identify an initial
+generalisation regime followed by a memorisation regime when using finite
+training data.
+
+For Flow Matching trained on a fixed dataset, sampling $X$ from the
+available points makes the prescribed endpoint the empirical measure
+\begin{equation}\label{eq:overfit-empirical-measure}
+\widehat P_N=\frac{1}{N}\sum_{i=1}^N\delta_{x_i}.
+\end{equation}
+Learning this empirical distribution more precisely concentrates generated samples
+around individual training points~\cite{LipmanEtAl2023,BambergerEtAl2026}.
+Carr\'e du champ Flow Matching proposes a way to regularise this
+quality--generalisation tradeoff by introducing anisotropic noise adapted
+to the local data geometry~\cite{BambergerEtAl2026}.
+We will visualise the transition from generalisation to memorisation on a
+small two-dimensional example.
+
+\section{A two-dimensional visualisation}
+\label{sec:visualisation}
+
+We propose to visualise this memorisation regime through a two-dimensional
+example. We construct $p_{\mathrm{data}}$ by smoothing the spiral
+\begin{equation}\label{eq:spiral-curve}
+\gamma(s)=hs\bigl(\cos s,\sin s\bigr),\qquad
+0\leq s\leq 6\pi,\qquad h=\frac{1.1}{2\pi},
+\end{equation}
+with a Gaussian kernel of standard deviation $0.16$. The curve parameter
+is sampled uniformly. The resulting density is restricted to
+$[-3.94,3.94]^2$ and normalised. Figure~\ref{fig:spiral-density} shows this
+density and a few samples.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{overfit/figures/spiral_density.pdf}
+\caption{The spiral density $p_{\mathrm{data}}$ and 150 independent samples.
+Colours and contours represent the probability density.}
+\label{fig:spiral-density}
+\end{figure}
+
+\subsection{Training from an infinite dataset}
+\label{subsec:infinite-data}
+
+We first train an MLP with four hidden layers of width 128, SiLU
+activations and a sinusoidal time encoding. We use
+$p_{\mathrm{init}}=\mathcal N(0,\operatorname{Id})$. At each of the 20,000
+training updates, we draw 1,024 fresh samples from $p_{\mathrm{data}}$,
+independent Gaussian samples from $p_{\mathrm{init}}$, and times uniformly
+in $[0,1]$. Training therefore uses an on-demand stream of samples from the
+underlying distribution. The video in Figure~\ref{fig:online-spiral-video}
+shows 975 initial Gaussian particles transported by the learnt field,
+using 50 fourth-order Runge--Kutta steps.
+\FloatBarrier
+
+\subsection{Training from a finite dataset}
+\label{subsec:finite-data}
+
+We now draw 1,000 independent samples from the same $p_{\mathrm{data}}$:
+500 are used for training and 500 for validation. These samples remain
+fixed for the full training. The finite-data model has four hidden layers
+of width 256, SiLU activations, the same time encoding, and 64 fixed
+spatial Fourier frequencies. Its architecture remains unchanged
+throughout this experiment.
+
+We train the network for 100,000 epochs, where one epoch is a full pass
+over the 500 training samples, in two batches of 250. Gaussian samples
+and uniform times are drawn again at each visit.\footnote{After epoch
+30,000, updates use the exact empirical conditional-mean velocity to
+reduce gradient noise. This has the same Flow Matching optimum; the
+plotted losses keep the original conditional regression definition.}
+Figure~\ref{fig:finite-data-losses} shows the training and validation
+velocity-regression losses. For evaluation, we use 32 fixed noise/time
+draws per data point at every checkpoint.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{overfit/fixed_dataset_longer/visualisations_975/figures/fixed_spiral_losses.png}
+\caption{Training and validation losses for the fixed 500/500 split.
+Left: uniform times in $[0,1]$. Right: times above $0.9$. Vertical marks
+identify the three selected checkpoints.}
+\label{fig:finite-data-losses}
+\end{figure}
+
+The transported initial law at different training regimes is shown in
+Figure~\ref{fig:finite-data-transport}: generalisation at epoch 8,500,
+the beginning of overfitting at epoch 17,000, and memorisation at epoch
+100,000. The three videos follow the same 975 particles sampled from
+$p_{\mathrm{init}}$. As training continues, their final positions
+concentrate around the fixed training points.
+
+\begin{figure}[htbp]
+\centering
+\href{run:overfit/fixed_dataset_longer/visualisations_975/figures/fixed_spiral_late_training.mp4}{%
+\includegraphics[width=\textwidth]{overfit/fixed_dataset_longer/visualisations_975/figures/fixed_spiral_endpoints.png}}
+\par\smallskip
+{\small
+\href{run:overfit/fixed_dataset_longer/visualisations_975/figures/fixed_spiral_generalisation.mp4}{Generalisation}
+\quad
+\href{run:overfit/fixed_dataset_longer/visualisations_975/figures/fixed_spiral_memorisation_onset.mp4}{Overfitting begins}
+\quad
+\href{run:overfit/fixed_dataset_longer/visualisations_975/figures/fixed_spiral_late_training.mp4}{Memorisation}}
+\caption{Transported densities at $t=1$ for the three training regimes.
+Hollow circles mark the fixed training points. Click the labels to open
+the corresponding videos, or the image for the last video.}
+\label{fig:finite-data-transport}
+\end{figure}
+\FloatBarrier
+
+%% ----- References -----
+%% Existing bibliography reused verbatim, with the new references appended.
+\begin{thebibliography}{99}
+
+\bibitem{NicolaescuCoarea}
+L.~I.~Nicolaescu,
+\emph{The co-area formula}, lecture notes, revised 2021.
+\url{https://www3.nd.edu/~lnicolae/Coarea.pdf}.
+
+\bibitem{LipmanEtAl2023}
+Y.~Lipman, R.~T.~Q.~Chen, H.~Ben-Hamu, M.~Nickel, and M.~Le,
+\emph{Flow Matching for Generative Modeling}, ICLR, 2023.
+\url{https://arxiv.org/abs/2210.02747}.
+
+\bibitem{AlbergoBoffiVandenEijnden2025}
+M.~S.~Albergo, N.~M.~Boffi, and E.~Vanden-Eijnden,
+\emph{Stochastic Interpolants: A Unifying Framework for Flows and Diffusions},
+Journal of Machine Learning Research \textbf{26} (2025), no.~209, 1--80.
+\url{https://www.jmlr.org/papers/v26/23-1605.html}.
+
+\bibitem{Otto2001}
+F.~Otto,
+\textit{The geometry of dissipative evolution equations: the porous medium equation},
+Communications in Partial Differential Equations,
+\textbf{26} (2001), no.~1--2, 101--174.
+\newblock DOI: \href{https://doi.org/10.1081/PDE-100002243}
+{10.1081/PDE-100002243}.
+
+\bibitem{BenamouBrenier2000}
+J.-D.\ Benamou and Y.\ Brenier,
+\textit{A Computational Fluid Mechanics Solution to the Monge--Kantorovich Mass Transfer Problem},
+Numerische Mathematik, vol.\ 84, no.\ 3, pp.\ 375--393, 2000.
+\newblock DOI: \href{https://doi.org/10.1007/s002110050002}
+{10.1007/s002110050002}.
+
+\bibitem{Villani2009}
+C.~Villani,
+\textit{Optimal Transport: Old and New},
+Grundlehren der mathematischen Wissenschaften, vol.~338,
+Springer, Berlin, Heidelberg, 2009.
+\newblock DOI: \href{https://doi.org/10.1007/978-3-540-71050-9}
+{10.1007/978-3-540-71050-9}.
+
+\bibitem{LiuGongLiu2023}
+X.~Liu, C.~Gong, and Q.~Liu,
+\emph{Flow Straight and Fast: Learning to Generate and Transfer Data with Rectified Flow},
+ICLR, 2023. \url{https://arxiv.org/abs/2209.03003}.
+
+\bibitem{EsserEtAl2024}
+P.~Esser et al.,
+\emph{Scaling Rectified Flow Transformers for High-Resolution Image Synthesis},
+ICML, PMLR \textbf{235} (2024), 12606--12633.
+\url{https://proceedings.mlr.press/v235/esser24a.html}.
+
+\bibitem{ZhuEtAl2024}
+Y.~Zhu, X.~Liu, and Q.~Liu,
+\emph{SlimFlow: Training Smaller One-Step Diffusion Models with Rectified Flow},
+ECCV, 2024.
+\url{https://www.ecva.net/papers/eccv_2024/papers_ECCV/papers/10822.pdf}.
+
+\bibitem{AvrahamiEtAl2025}
+O.~Avrahami, O.~Patashnik, O.~Fried, E.~Nemchinov, K.~Aberman,
+D.~Lischinski, and D.~Cohen-Or,
+\emph{Stable Flow: Vital Layers for Training-Free Image Editing},
+CVPR, 2025, 7877--7888.
+\url{https://openaccess.thecvf.com/content/CVPR2025/html/Avrahami_Stable_Flow_Vital_Layers_for_Training-Free_Image_Editing_CVPR_2025_paper.html}.
+
+\bibitem{LeEtAl2023}
+M.~Le et al.,
+\emph{Voicebox: Text-Guided Multilingual Universal Speech Generation at Scale},
+NeurIPS \textbf{36} (2023).
+\url{https://arxiv.org/abs/2306.15687}.
+
+\bibitem{VyasEtAl2023}
+A.~Vyas et al.,
+\emph{Audiobox: Unified Audio Generation with Natural Language Prompts},
+arXiv:2312.15821, 2023.
+\url{https://arxiv.org/abs/2312.15821}.
+
+\bibitem{PolyakEtAl2024}
+A.~Polyak et al.,
+\emph{Movie Gen: A Cast of Media Foundation Models},
+arXiv:2410.13720, 2024.
+\url{https://arxiv.org/abs/2410.13720}.
+
+\bibitem{KiEtAl2025}
+T.~Ki, D.~Min, and G.~Chae,
+\emph{FLOAT: Generative Motion Latent Flow Matching for Audio-driven Talking Portrait},
+ICCV, 2025, 14699--14710.
+\url{https://openaccess.thecvf.com/content/ICCV2025/html/Ki_FLOAT_Generative_Motion_Latent_Flow_Matching_for_Audio-driven_Talking_Portrait_ICCV_2025_paper.html}.
+
+\bibitem{Bogachev2007}
+V.~I.~Bogachev,
+\emph{Measure Theory}, Vols.~I--II, Springer, 2007.
+\newblock DOI: \href{https://doi.org/10.1007/978-3-540-34514-5}
+{10.1007/978-3-540-34514-5}.
+
+\bibitem{AmbrosioGigliSavare2008}
+L.\ Ambrosio, N.\ Gigli, and G.\ Savar\'e,
+\textit{Gradient Flows: In Metric Spaces and in the Space of Probability Measures},
+2nd ed., Lectures in Mathematics ETH Z\"urich,
+Birkh\"auser, Basel, 2008.
+\newblock DOI: \href{https://doi.org/10.1007/978-3-7643-8722-8}
+{10.1007/978-3-7643-8722-8}.
+
+\bibitem{AmbrosioGigli2013}
+L.~Ambrosio and N.~Gigli,
+\emph{A user's guide to optimal transport},
+in \emph{Modelling and Optimisation of Flows on Networks},
+Lecture Notes in Mathematics \textbf{2062}, Springer, 2013, 1--155.
+\url{https://cvgmt.sns.it/media/doc/paper/195/users_guide-final.pdf}.
+
+\bibitem{Mallat2025}
+S.~Mallat,
+\emph{Mod\`eles probabilistes par \texorpdfstring{\'energie}{energie} de Gibbs et GAN},
+lecture in \emph{G\'en\'eration de donn\'ees en IA par transport et
+ d\'ebruitage (2)}, Coll\`ege de France, 2024--2025.
+\url{https://www.college-de-france.fr/fr/agenda/cours/generation-de-donnees-en-ia-par-transport-et-debruitage/modeles-probabilistes-par-energie-de-gibbs-et-gan}.
+
+\bibitem{MetropolisEtAl1953}
+N.~Metropolis, A.~W.~Rosenbluth, M.~N.~Rosenbluth, A.~H.~Teller,
+and E.~Teller,
+\emph{Equation of State Calculations by Fast Computing Machines},
+The Journal of Chemical Physics \textbf{21} (1953), no.~6, 1087--1092.
+\newblock DOI: \href{https://doi.org/10.1063/1.1699114}{10.1063/1.1699114}.
+
+\bibitem{HoEtAl2020}
+J.~Ho, A.~Jain, and P.~Abbeel,
+\emph{Denoising Diffusion Probabilistic Models},
+NeurIPS \textbf{33} (2020), 6840--6851.
+\url{https://proceedings.neurips.cc/paper/2020/hash/4c5bcfec8584af0d967f1ab10179ca4b-Abstract.html}.
+
+\bibitem{SongEtAl2021}
+Y.~Song, J.~Sohl-Dickstein, D.~P.~Kingma, A.~Kumar, S.~Ermon,
+and B.~Poole,
+\emph{Score-Based Generative Modeling through Stochastic Differential Equations},
+ICLR, 2021.
+\url{https://arxiv.org/abs/2011.13456}.
+
+\bibitem{TongEtAl2024}
+A.~Tong, K.~Fatras, N.~Malkin, G.~Huguet, Y.~Zhang,
+J.~Rector-Brooks, G.~Wolf, and Y.~Bengio,
+\emph{Improving and generalizing flow-based generative models with minibatch optimal transport},
+Transactions on Machine Learning Research, 2024.
+\url{https://arxiv.org/abs/2302.00482}.
+
+\bibitem{Guilbert2026Atlas}
+P.~Guilbert,
+\emph{Fisher--Rao and Wasserstein--Otto Geometries of Parametric Probability Families: A Comparative Atlas},
+preprint, Zenodo, 2026.
+\newblock DOI: \href{https://doi.org/10.5281/zenodo.22921933}{10.5281/zenodo.22921933}.
+
+
+
+\bibitem{BonnaireEtAl2025Memorization}
+T.~Bonnaire, R.~Urfin, G.~Biroli, and M.~M\'ezard,
+\emph{Why Diffusion Models Don't Memorize: The Role of Implicit Dynamical Regularization in Training},
+Advances in Neural Information Processing Systems \textbf{38} (2025).
+\url{https://papers.nips.cc/paper_files/paper/2025/hash/ceb7f3cc876a6dcb15130a645b5a4507-Abstract-Conference.html}.
+
+\bibitem{FarghlyEtAl2026}
+T.~Farghly, B.~Dupuis, A.~Durmus, and U.~Simsekli,
+\emph{Benign Overfitting Does Not Occur in Diffusion Models},
+arXiv:2607.02671, 2026.
+\url{https://arxiv.org/abs/2607.02671}.
+
+\bibitem{UrfinEtAl2026}
+R.~Urfin, T.~Bonnaire, G.~Biroli, and M.~M\'ezard,
+\emph{Double Descent and Malign Overfitting in Diffusion Models},
+arXiv:2609.26392, 2026.
+\url{https://arxiv.org/abs/2609.26392}.
+
+\bibitem{BambergerEtAl2026}
+J.~Bamberger, I.~Jones, D.~Duncan, M.~Bronstein,
+P.~Vandergheynst, and A.~Gosztolai,
+\emph{Carr\'e du champ flow matching: better quality-generalisation tradeoff in generative models},
+ICLR, 2026.
+\url{https://proceedings.iclr.cc/paper_files/paper/2026/hash/dbc9f9d486bd1714896111b0fcd78cd1-Abstract-Conference.html}.
+
+\bibitem{Guilbert2026FlowMatching}
+P.~Guilbert,
+\emph{Flow Matching and Optimal Transport: An Illustrated Introduction to Wasserstein--Otto Geometry},
+Zenodo, 2026.
+\newblock DOI: \href{https://doi.org/10.5281/zenodo.24084198}{10.5281/zenodo.24084198}.
+
+
+
+\bibitem{GoodfellowEtAl2014}
+I.~J.~Goodfellow, J.~Pouget-Abadie, M.~Mirza, B.~Xu,
+D.~Warde-Farley, S.~Ozair, A.~Courville, and Y.~Bengio,
+\emph{Generative Adversarial Nets},
+Advances in Neural Information Processing Systems \textbf{27} (2014).
+\url{https://proceedings.neurips.cc/paper/2014/hash/f033ed80deb0234979a61f95710dbe25-Abstract.html}.
+
+\bibitem{KingmaWelling2014}
+D.~P.~Kingma and M.~Welling,
+\emph{Auto-Encoding Variational Bayes}, ICLR, 2014.
+\url{https://arxiv.org/abs/1312.6114}.
+
+\bibitem{BelkinEtAl2019}
+M.~Belkin, D.~Hsu, S.~Ma, and S.~Mandal,
+\emph{Reconciling modern machine learning practice and the bias-variance trade-off},
+Proceedings of the National Academy of Sciences, 2019.
+\newblock DOI: \href{https://doi.org/10.1073/pnas.1903070116}{10.1073/pnas.1903070116}.
+
+\bibitem{NakkiranEtAl2020}
+P.~Nakkiran, G.~Kaplun, Y.~Bansal, T.~Yang, B.~Barak, and I.~Sutskever,
+\emph{Deep Double Descent: Where Bigger Models and More Data Hurt},
+ICLR, 2020.
+\url{https://arxiv.org/abs/1912.02292}.
+
+\end{thebibliography}
+
+\end{document}

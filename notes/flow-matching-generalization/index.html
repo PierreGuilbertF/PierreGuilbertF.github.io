@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>When Generative Models Do Not Exhibit Double Descent: A Flow Matching Example | Pierre Guilbert</title>
+<meta name="author" content="Pierre Guilbert">
+<meta name="description" content="A mathematical note on generalisation and memorisation in Flow Matching, with two-dimensional experiments and particle videos.">
+<link rel="stylesheet" href="../../cv.css"><link rel="stylesheet" href="../note.css">
+<script>window.MathJax={tex:{tags:'ams'},svg:{fontCache:'local'}};</script>
+<script defer src="../../assets/vendor/mathjax-tex-svg.js"></script>
+</head><body><main>
+<nav aria-label="Page navigation"><a href="../../index.html">← Home</a><a href="../../notes.html">Mathematical Notes</a></nav>
+<article><header class="note-header"><p class="eyebrow">Mathematical Notes · Flow Matching generalization</p>
+<h1>When Generative Models Do Not Exhibit Double Descent: A Flow Matching Example</h1>
+<p class="byline"><a href="https://orcid.org/0009-0002-1582-4435" rel="author">Pierre Guilbert</a> · <a href="mailto:spguilbert@gmail.com">spguilbert@gmail.com</a></p>
+<p class="downloads"><a href="FlowMatchingOverfitting.pdf">Original PDF</a><a href="FlowMatchingOverfitting.tex" download>LaTeX source</a></p></header>
+<h2 data-number="1" id="sec:introduction"><span
+class="header-section-number">1</span> Introduction</h2>
+<p>Generative modelling is a field of machine learning that aims at
+approximating an unknown data distribution, with density <span
+class="math inline">\(p_{\mathrm{data}}\)</span>, from a finite set of
+independent samples <span class="math inline">\((x_1,\ldots,x_N)\in
+E^N\)</span>, where <span class="math inline">\(E=\mathbb{R}^d\)</span>.
+Methods include generative adversarial networks (GANs) <a
+href="#ref:GoodfellowEtAl2014">[29]</a> and variational autoencoders <a
+href="#ref:KingmaWelling2014">[30]</a>. Diffusion models <a
+href="#ref:HoEtAl2020">[20]</a>, <a href="#ref:SongEtAl2021">[21]</a>
+and Flow Matching <a href="#ref:LipmanEtAl2023">[2]</a> tackle modelling
+and sampling together by learning an evolution from a simple initial
+distribution to the data distribution. We are interested here in Flow
+Matching.</p>
+<figure id="fig:online-spiral-video" data-latex-placement="H">
+<video controls playsinline muted loop preload="metadata" poster="media/spiral_online_note_preview.png" aria-label="Gaussian-to-spiral transport of 975 particles"><source src="media/spiral_flow_matching_online_975_particles.mp4" type="video/mp4"><a href="media/spiral_flow_matching_online_975_particles.mp4">Open the particle video (MP4)</a></video>
+<p><span><a
+href="media/spiral_flow_matching_online_975_particles.mp4">Open
+the particle video (MP4)</a></span></p>
+<figcaption><strong>Figure 1.</strong> Gaussian-to-spiral transport learnt with fresh training
+samples. The video follows 975 particles; click the preview to open the
+accompanying MP4. The example is described in Section <a
+href="#sec:visualisation">3</a>.</figcaption>
+</figure>
+<p>Let <span class="math inline">\(p_{\mathrm{init}}\)</span> be the
+initial density, and let <span class="math inline">\(Z\sim
+p_{\mathrm{init}}\)</span> and <span class="math inline">\(X\sim
+p_{\mathrm{data}}\)</span> be independent. We consider the path of
+random variables <span class="math display">\[\begin{equation}
+\label{eq:overfit-interpolation}
+X_t=tX+(1-t)Z,\qquad 0\leq t\leq 1.
+\end{equation}\]</span> For <span
+class="math inline">\(0&lt;t&lt;1\)</span>, its density <span
+class="math inline">\(p_t\)</span> is the convolution of the data and
+initial densities contracted by <span class="math inline">\(t\)</span>
+and <span class="math inline">\(1-t\)</span>, respectively <a
+href="#ref:Guilbert2026FlowMatching">[28]</a>: <span
+class="math display">\[\begin{equation}
+\label{eq:overfit-convolution}
+p_t=
+\left[\frac{1}{t^d}p_{\mathrm{data}}\!\left(\frac{\cdot}{t}\right)\right]
+*\left[\frac{1}{(1-t)^d}p_{\mathrm{init}}\!\left(\frac{\cdot}{1-t}\right)\right].
+\end{equation}\]</span> Flow Matching consists in learning a velocity
+field <span class="math inline">\(v_\theta:[0,1]\times E\to E\)</span>
+to transport <span class="math inline">\(p_{\mathrm{init}}\)</span> to
+<span class="math inline">\(p_{\mathrm{data}}\)</span>. The target
+velocity <span class="math inline">\(v_t\)</span> and the density path
+are linked by the continuity equation <a
+href="#ref:LipmanEtAl2023">[2]</a>, <a
+href="#ref:Guilbert2026FlowMatching">[28]</a>: <span
+class="math display">\[\begin{equation}
+\label{eq:overfit-continuity}
+\partial_t p_t=-\mathop{\mathrm{div}}(p_t v_t).
+\end{equation}\]</span> Sampling from the learnt distribution is then
+performed using a classical numerical integration solver, such as Euler
+or Runge–Kutta, applied to the learnt velocity vector field with initial
+samples drawn from <span
+class="math inline">\(p_{\mathrm{init}}\)</span>.</p>
+<h2 data-number="2" id="sec:double-descent"><span
+class="header-section-number">2</span> Double descent and
+memorisation</h2>
+<p>In supervised machine learning, it has been shown that, under some
+conditions, increasing model capacity can lead to a
+<em>double-descent</em> learning curve <a
+href="#ref:BelkinEtAl2019">[31]</a>, <a
+href="#ref:NakkiranEtAl2020">[32]</a>. The test error first decreases,
+increases near the interpolation threshold, where the model has enough
+capacity to fit the training samples, and decreases again for larger
+models. Nakkiran et al. <a href="#ref:NakkiranEtAl2020">[32]</a> also
+observe double descent with longer training of a fixed ResNet18 on
+CIFAR-10 with label noise. Figure <a
+href="#fig:supervised-double-descent">2</a> illustrates both cases.</p>
+<figure id="fig:supervised-double-descent" data-latex-placement="htbp">
+<img src="media/nakkiran_model_double_descent.png"
+style="width:80.0%" / alt="Model-width double descent for ResNet18 on CIFAR-10" loading="lazy">
+<img src="media/nakkiran_epoch_double_descent.png"
+style="width:80.0%" / alt="Training-time double descent for ResNet18 on CIFAR-10" loading="lazy">
+<figcaption><strong>Figure 2.</strong> Double descent for ResNet18 models on CIFAR-10 with label
+noise. Top: increasing model width. Bottom: increasing training time for
+fixed architectures. Panels reproduced from Figures 1 (left) and 9
+(left) of Nakkiran et al. <a
+href="#ref:NakkiranEtAl2020">[32]</a>.</figcaption>
+</figure>
+<p>Recent research on diffusion models reports a different behaviour.
+Farghly et al. <a href="#ref:FarghlyEtAl2026">[25]</a> derive, in their
+analysis, a U-shaped test loss as a function of model capacity. Urfin et
+al. <a href="#ref:UrfinEtAl2026">[26]</a> find that increasing capacity
+can drive unregularised models towards memorisation. Along the
+training-time axis, Bonnaire et al. <a
+href="#ref:BonnaireEtAl2025Memorization">[24]</a> identify an initial
+generalisation regime followed by a memorisation regime when using
+finite training data.</p>
+<p>For Flow Matching trained on a fixed dataset, sampling <span
+class="math inline">\(X\)</span> from the available points makes the
+prescribed endpoint the empirical measure <span
+class="math display">\[\begin{equation}
+\label{eq:overfit-empirical-measure}
+\widehat P_N=\frac{1}{N}\sum_{i=1}^N\delta_{x_i}.
+\end{equation}\]</span> Learning this empirical distribution more
+precisely concentrates generated samples around individual training
+points <a href="#ref:LipmanEtAl2023">[2]</a>, <a
+href="#ref:BambergerEtAl2026">[27]</a>. Carré du champ Flow Matching
+proposes a way to regularise this quality–generalisation tradeoff by
+introducing anisotropic noise adapted to the local data geometry <a
+href="#ref:BambergerEtAl2026">[27]</a>. We will visualise the transition
+from generalisation to memorisation on a small two-dimensional
+example.</p>
+<h2 data-number="3" id="sec:visualisation"><span
+class="header-section-number">3</span> A two-dimensional
+visualisation</h2>
+<p>We propose to visualise this memorisation regime through a
+two-dimensional example. We construct <span
+class="math inline">\(p_{\mathrm{data}}\)</span> by smoothing the spiral
+<span class="math display">\[\begin{equation}
+\label{eq:spiral-curve}
+\gamma(s)=hs\bigl(\cos s,\sin s\bigr),\qquad
+0\leq s\leq 6\pi,\qquad h=\frac{1.1}{2\pi},
+\end{equation}\]</span> with a Gaussian kernel of standard deviation
+<span class="math inline">\(0.16\)</span>. The curve parameter is
+sampled uniformly. The resulting density is restricted to <span
+class="math inline">\([-3.94,3.94]^2\)</span> and normalised. Figure <a
+href="#fig:spiral-density">3</a> shows this density and a few
+samples.</p>
+<figure id="fig:spiral-density" data-latex-placement="htbp">
+<img src="media/spiral_density.png" style="width:85.0%"  alt="Spiral probability density" loading="lazy">
+<figcaption><strong>Figure 3.</strong> The spiral density <span
+class="math inline">\(p_{\mathrm{data}}\)</span> and 150 independent
+samples. Colours and contours represent the probability
+density.</figcaption>
+</figure>
+<h3 data-number="3.1" id="subsec:infinite-data"><span
+class="header-section-number">3.1</span> Training from an infinite
+dataset</h3>
+<p>We first train an MLP with four hidden layers of width 128, SiLU
+activations and a sinusoidal time encoding. We use <span
+class="math inline">\(p_{\mathrm{init}}=\mathcal
+N(0,\operatorname{Id})\)</span>. At each of the 20,000 training updates,
+we draw 1,024 fresh samples from <span
+class="math inline">\(p_{\mathrm{data}}\)</span>, independent Gaussian
+samples from <span class="math inline">\(p_{\mathrm{init}}\)</span>, and
+times uniformly in <span class="math inline">\([0,1]\)</span>. Training
+therefore uses an on-demand stream of samples from the underlying
+distribution. The video in Figure <a
+href="#fig:online-spiral-video">1</a> shows 975 initial Gaussian
+particles transported by the learnt field, using 50 fourth-order
+Runge–Kutta steps.</p>
+<h3 data-number="3.2" id="subsec:finite-data"><span
+class="header-section-number">3.2</span> Training from a finite
+dataset</h3>
+<p>We now draw 1,000 independent samples from the same <span
+class="math inline">\(p_{\mathrm{data}}\)</span>: 500 are used for
+training and 500 for validation. These samples remain fixed for the full
+training. The finite-data model has four hidden layers of width 256,
+SiLU activations, the same time encoding, and 64 fixed spatial Fourier
+frequencies. Its architecture remains unchanged throughout this
+experiment.</p>
+<p>We train the network for 100,000 epochs, where one epoch is a full
+pass over the 500 training samples, in two batches of 250. Gaussian
+samples and uniform times are drawn again at each visit.<a href="#fn1"
+class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>
+Figure <a href="#fig:finite-data-losses">4</a> shows the training and
+validation velocity-regression losses. For evaluation, we use 32 fixed
+noise/time draws per data point at every checkpoint.</p>
+<figure id="fig:finite-data-losses" data-latex-placement="htbp">
+<img src="media/fixed_spiral_losses.png" / alt="Training and validation losses for the fixed 500/500 split" loading="lazy">
+<figcaption><strong>Figure 4.</strong> Training and validation losses for the fixed 500/500 split.
+Left: uniform times in <span class="math inline">\([0,1]\)</span>.
+Right: times above <span class="math inline">\(0.9\)</span>. Vertical
+marks identify the three selected checkpoints.</figcaption>
+</figure>
+<p>The transported initial law at different training regimes is shown in
+Figure <a href="#fig:finite-data-transport">5</a>: generalisation at
+epoch 8,500, the beginning of overfitting at epoch 17,000, and
+memorisation at epoch 100,000. The three videos follow the same 975
+particles sampled from <span
+class="math inline">\(p_{\mathrm{init}}\)</span>. As training continues,
+their final positions concentrate around the fixed training points.</p>
+<figure id="fig:finite-data-transport" data-latex-placement="htbp">
+<p><a
+href="media/fixed_spiral_late_training.mp4">
+<img src="media/fixed_spiral_endpoints.png" / alt="Transported densities at three training checkpoints" loading="lazy"></a></p>
+<p><span> <a
+href="media/fixed_spiral_generalisation.mp4">Generalisation</a>
+<a
+href="media/fixed_spiral_memorisation_onset.mp4">Overfitting
+begins</a> <a
+href="media/fixed_spiral_late_training.mp4">Memorisation</a></span></p>
+<figcaption><strong>Figure 5.</strong> Transported densities at <span
+class="math inline">\(t=1\)</span> for the three training regimes.
+Hollow circles mark the fixed training points. Click the labels to open
+the corresponding videos, or the image for the last video.</figcaption>
+</figure><div class="video-grid"><div><h3>Generalisation</h3><video controls playsinline muted loop preload="metadata" poster="media/generalisation.jpg" aria-label="Generalisation"><source src="media/fixed_spiral_generalisation.mp4" type="video/mp4"><a href="media/fixed_spiral_generalisation.mp4">Generalisation</a></video></div><div><h3>Overfitting begins</h3><video controls playsinline muted loop preload="metadata" poster="media/memorisation_onset.jpg" aria-label="Overfitting begins"><source src="media/fixed_spiral_memorisation_onset.mp4" type="video/mp4"><a href="media/fixed_spiral_memorisation_onset.mp4">Overfitting begins</a></video></div><div><h3>Memorisation</h3><video controls playsinline muted loop preload="metadata" poster="media/late_training.jpg" aria-label="Memorisation"><source src="media/fixed_spiral_late_training.mp4" type="video/mp4"><a href="media/fixed_spiral_late_training.mp4">Memorisation</a></video></div></div>
+<h2 class="unnumbered" id="references">References</h2>
+<ol class="bibliography">
+<li><p><span id="ref:NicolaescuCoarea"
+data-label="ref:NicolaescuCoarea"></span> L. I. Nicolaescu, <em>The
+co-area formula</em>, lecture notes, revised 2021. <a
+href="https://www3.nd.edu/~lnicolae/Coarea.pdf"
+class="uri">https://www3.nd.edu/~lnicolae/Coarea.pdf</a>.</p></li>
+<li><p><span id="ref:LipmanEtAl2023"
+data-label="ref:LipmanEtAl2023"></span> Y. Lipman, R. T. Q. Chen,
+H. Ben-Hamu, M. Nickel, and M. Le, <em>Flow Matching for Generative
+Modeling</em>, ICLR, 2023. <a href="https://arxiv.org/abs/2210.02747"
+class="uri">https://arxiv.org/abs/2210.02747</a>.</p></li>
+<li><p><span id="ref:AlbergoBoffiVandenEijnden2025"
+data-label="ref:AlbergoBoffiVandenEijnden2025"></span> M. S. Albergo,
+N. M. Boffi, and E. Vanden-Eijnden, <em>Stochastic Interpolants: A
+Unifying Framework for Flows and Diffusions</em>, Journal of Machine
+Learning Research <strong>26</strong> (2025), no. 209, 1–80. <a
+href="https://www.jmlr.org/papers/v26/23-1605.html"
+class="uri">https://www.jmlr.org/papers/v26/23-1605.html</a>.</p></li>
+<li><p><span id="ref:Otto2001" data-label="ref:Otto2001"></span>
+F. Otto, <em>The geometry of dissipative evolution equations: the porous
+medium equation</em>, Communications in Partial Differential Equations,
+<strong>26</strong> (2001), no. 1–2, 101–174. DOI: <a
+href="https://doi.org/10.1081/PDE-100002243">10.1081/PDE-100002243</a>.</p></li>
+<li><p><span id="ref:BenamouBrenier2000"
+data-label="ref:BenamouBrenier2000"></span> J.-D. Benamou and
+Y. Brenier, <em>A Computational Fluid Mechanics Solution to the
+Monge–Kantorovich Mass Transfer Problem</em>, Numerische Mathematik,
+vol. 84, no. 3, pp. 375–393, 2000. DOI: <a
+href="https://doi.org/10.1007/s002110050002">10.1007/s002110050002</a>.</p></li>
+<li><p><span id="ref:Villani2009" data-label="ref:Villani2009"></span>
+C. Villani, <em>Optimal Transport: Old and New</em>, Grundlehren der
+mathematischen Wissenschaften, vol. 338, Springer, Berlin, Heidelberg,
+2009. DOI: <a
+href="https://doi.org/10.1007/978-3-540-71050-9">10.1007/978-3-540-71050-9</a>.</p></li>
+<li><p><span id="ref:LiuGongLiu2023"
+data-label="ref:LiuGongLiu2023"></span> X. Liu, C. Gong, and Q. Liu,
+<em>Flow Straight and Fast: Learning to Generate and Transfer Data with
+Rectified Flow</em>, ICLR, 2023. <a
+href="https://arxiv.org/abs/2209.03003"
+class="uri">https://arxiv.org/abs/2209.03003</a>.</p></li>
+<li><p><span id="ref:EsserEtAl2024"
+data-label="ref:EsserEtAl2024"></span> P. Esser et al., <em>Scaling
+Rectified Flow Transformers for High-Resolution Image Synthesis</em>,
+ICML, PMLR <strong>235</strong> (2024), 12606–12633. <a
+href="https://proceedings.mlr.press/v235/esser24a.html"
+class="uri">https://proceedings.mlr.press/v235/esser24a.html</a>.</p></li>
+<li><p><span id="ref:ZhuEtAl2024" data-label="ref:ZhuEtAl2024"></span>
+Y. Zhu, X. Liu, and Q. Liu, <em>SlimFlow: Training Smaller One-Step
+Diffusion Models with Rectified Flow</em>, ECCV, 2024. <a
+href="https://www.ecva.net/papers/eccv_2024/papers_ECCV/papers/10822.pdf"
+class="uri">https://www.ecva.net/papers/eccv_2024/papers_ECCV/papers/10822.pdf</a>.</p></li>
+<li><p><span id="ref:AvrahamiEtAl2025"
+data-label="ref:AvrahamiEtAl2025"></span> O. Avrahami, O. Patashnik,
+O. Fried, E. Nemchinov, K. Aberman, D. Lischinski, and D. Cohen-Or,
+<em>Stable Flow: Vital Layers for Training-Free Image Editing</em>,
+CVPR, 2025, 7877–7888. <a
+href="https://openaccess.thecvf.com/content/CVPR2025/html/Avrahami_Stable_Flow_Vital_Layers_for_Training-Free_Image_Editing_CVPR_2025_paper.html"
+class="uri">https://openaccess.thecvf.com/content/CVPR2025/html/Avrahami_Stable_Flow_Vital_Layers_for_Training-Free_Image_Editing_CVPR_2025_paper.html</a>.</p></li>
+<li><p><span id="ref:LeEtAl2023" data-label="ref:LeEtAl2023"></span>
+M. Le et al., <em>Voicebox: Text-Guided Multilingual Universal Speech
+Generation at Scale</em>, NeurIPS <strong>36</strong> (2023). <a
+href="https://arxiv.org/abs/2306.15687"
+class="uri">https://arxiv.org/abs/2306.15687</a>.</p></li>
+<li><p><span id="ref:VyasEtAl2023" data-label="ref:VyasEtAl2023"></span>
+A. Vyas et al., <em>Audiobox: Unified Audio Generation with Natural
+Language Prompts</em>, arXiv:2312.15821, 2023. <a
+href="https://arxiv.org/abs/2312.15821"
+class="uri">https://arxiv.org/abs/2312.15821</a>.</p></li>
+<li><p><span id="ref:PolyakEtAl2024"
+data-label="ref:PolyakEtAl2024"></span> A. Polyak et al., <em>Movie Gen:
+A Cast of Media Foundation Models</em>, arXiv:2410.13720, 2024. <a
+href="https://arxiv.org/abs/2410.13720"
+class="uri">https://arxiv.org/abs/2410.13720</a>.</p></li>
+<li><p><span id="ref:KiEtAl2025" data-label="ref:KiEtAl2025"></span>
+T. Ki, D. Min, and G. Chae, <em>FLOAT: Generative Motion Latent Flow
+Matching for Audio-driven Talking Portrait</em>, ICCV, 2025,
+14699–14710. <a
+href="https://openaccess.thecvf.com/content/ICCV2025/html/Ki_FLOAT_Generative_Motion_Latent_Flow_Matching_for_Audio-driven_Talking_Portrait_ICCV_2025_paper.html"
+class="uri">https://openaccess.thecvf.com/content/ICCV2025/html/Ki_FLOAT_Generative_Motion_Latent_Flow_Matching_for_Audio-driven_Talking_Portrait_ICCV_2025_paper.html</a>.</p></li>
+<li><p><span id="ref:Bogachev2007" data-label="ref:Bogachev2007"></span>
+V. I. Bogachev, <em>Measure Theory</em>, Vols. I–II, Springer, 2007.
+DOI: <a
+href="https://doi.org/10.1007/978-3-540-34514-5">10.1007/978-3-540-34514-5</a>.</p></li>
+<li><p><span id="ref:AmbrosioGigliSavare2008"
+data-label="ref:AmbrosioGigliSavare2008"></span> L. Ambrosio, N. Gigli,
+and G. Savaré, <em>Gradient Flows: In Metric Spaces and in the Space of
+Probability Measures</em>, 2nd ed., Lectures in Mathematics ETH Zürich,
+Birkhäuser, Basel, 2008. DOI: <a
+href="https://doi.org/10.1007/978-3-7643-8722-8">10.1007/978-3-7643-8722-8</a>.</p></li>
+<li><p><span id="ref:AmbrosioGigli2013"
+data-label="ref:AmbrosioGigli2013"></span> L. Ambrosio and N. Gigli,
+<em>A user’s guide to optimal transport</em>, in <em>Modelling and
+Optimisation of Flows on Networks</em>, Lecture Notes in Mathematics
+<strong>2062</strong>, Springer, 2013, 1–155. <a
+href="https://cvgmt.sns.it/media/doc/paper/195/users_guide-final.pdf"
+class="uri">https://cvgmt.sns.it/media/doc/paper/195/users_guide-final.pdf</a>.</p></li>
+<li><p><span id="ref:Mallat2025" data-label="ref:Mallat2025"></span>
+S. Mallat, <em>Modèles probabilistes par énergie de Gibbs et GAN</em>,
+lecture in <em>Génération de données en IA par transport et débruitage
+(2)</em>, Collège de France, 2024–2025. <a
+href="https://www.college-de-france.fr/fr/agenda/cours/generation-de-donnees-en-ia-par-transport-et-debruitage/modeles-probabilistes-par-energie-de-gibbs-et-gan"
+class="uri">https://www.college-de-france.fr/fr/agenda/cours/generation-de-donnees-en-ia-par-transport-et-debruitage/modeles-probabilistes-par-energie-de-gibbs-et-gan</a>.</p></li>
+<li><p><span id="ref:MetropolisEtAl1953"
+data-label="ref:MetropolisEtAl1953"></span> N. Metropolis,
+A. W. Rosenbluth, M. N. Rosenbluth, A. H. Teller, and E. Teller,
+<em>Equation of State Calculations by Fast Computing Machines</em>, The
+Journal of Chemical Physics <strong>21</strong> (1953), no. 6,
+1087–1092. DOI: <a
+href="https://doi.org/10.1063/1.1699114">10.1063/1.1699114</a>.</p></li>
+<li><p><span id="ref:HoEtAl2020" data-label="ref:HoEtAl2020"></span>
+J. Ho, A. Jain, and P. Abbeel, <em>Denoising Diffusion Probabilistic
+Models</em>, NeurIPS <strong>33</strong> (2020), 6840–6851. <a
+href="https://proceedings.neurips.cc/paper/2020/hash/4c5bcfec8584af0d967f1ab10179ca4b-Abstract.html"
+class="uri">https://proceedings.neurips.cc/paper/2020/hash/4c5bcfec8584af0d967f1ab10179ca4b-Abstract.html</a>.</p></li>
+<li><p><span id="ref:SongEtAl2021" data-label="ref:SongEtAl2021"></span>
+Y. Song, J. Sohl-Dickstein, D. P. Kingma, A. Kumar, S. Ermon, and
+B. Poole, <em>Score-Based Generative Modeling through Stochastic
+Differential Equations</em>, ICLR, 2021. <a
+href="https://arxiv.org/abs/2011.13456"
+class="uri">https://arxiv.org/abs/2011.13456</a>.</p></li>
+<li><p><span id="ref:TongEtAl2024" data-label="ref:TongEtAl2024"></span>
+A. Tong, K. Fatras, N. Malkin, G. Huguet, Y. Zhang, J. Rector-Brooks,
+G. Wolf, and Y. Bengio, <em>Improving and generalizing flow-based
+generative models with minibatch optimal transport</em>, Transactions on
+Machine Learning Research, 2024. <a
+href="https://arxiv.org/abs/2302.00482"
+class="uri">https://arxiv.org/abs/2302.00482</a>.</p></li>
+<li><p><span id="ref:Guilbert2026Atlas"
+data-label="ref:Guilbert2026Atlas"></span> P. Guilbert, <em>Fisher–Rao
+and Wasserstein–Otto Geometries of Parametric Probability Families: A
+Comparative Atlas</em>, preprint, Zenodo, 2026. DOI: <a
+href="https://doi.org/10.5281/zenodo.22921933">10.5281/zenodo.22921933</a>.</p></li>
+<li><p><span id="ref:BonnaireEtAl2025Memorization"
+data-label="ref:BonnaireEtAl2025Memorization"></span> T. Bonnaire,
+R. Urfin, G. Biroli, and M. Mézard, <em>Why Diffusion Models Don’t
+Memorize: The Role of Implicit Dynamical Regularization in
+Training</em>, Advances in Neural Information Processing Systems
+<strong>38</strong> (2025). <a
+href="https://papers.nips.cc/paper_files/paper/2025/hash/ceb7f3cc876a6dcb15130a645b5a4507-Abstract-Conference.html"
+class="uri">https://papers.nips.cc/paper_files/paper/2025/hash/ceb7f3cc876a6dcb15130a645b5a4507-Abstract-Conference.html</a>.</p></li>
+<li><p><span id="ref:FarghlyEtAl2026"
+data-label="ref:FarghlyEtAl2026"></span> T. Farghly, B. Dupuis,
+A. Durmus, and U. Simsekli, <em>Benign Overfitting Does Not Occur in
+Diffusion Models</em>, arXiv:2607.02671, 2026. <a
+href="https://arxiv.org/abs/2607.02671"
+class="uri">https://arxiv.org/abs/2607.02671</a>.</p></li>
+<li><p><span id="ref:UrfinEtAl2026"
+data-label="ref:UrfinEtAl2026"></span> R. Urfin, T. Bonnaire, G. Biroli,
+and M. Mézard, <em>Double Descent and Malign Overfitting in Diffusion
+Models</em>, arXiv:2609.26392, 2026. <a
+href="https://arxiv.org/abs/2609.26392"
+class="uri">https://arxiv.org/abs/2609.26392</a>.</p></li>
+<li><p><span id="ref:BambergerEtAl2026"
+data-label="ref:BambergerEtAl2026"></span> J. Bamberger, I. Jones,
+D. Duncan, M. Bronstein, P. Vandergheynst, and A. Gosztolai, <em>Carré
+du champ flow matching: better quality-generalisation tradeoff in
+generative models</em>, ICLR, 2026. <a
+href="https://proceedings.iclr.cc/paper_files/paper/2026/hash/dbc9f9d486bd1714896111b0fcd78cd1-Abstract-Conference.html"
+class="uri">https://proceedings.iclr.cc/paper_files/paper/2026/hash/dbc9f9d486bd1714896111b0fcd78cd1-Abstract-Conference.html</a>.</p></li>
+<li><p><span id="ref:Guilbert2026FlowMatching"
+data-label="ref:Guilbert2026FlowMatching"></span> P. Guilbert, <em>Flow
+Matching and Optimal Transport: An Illustrated Introduction to
+Wasserstein–Otto Geometry</em>, Zenodo, 2026. DOI: <a
+href="https://doi.org/10.5281/zenodo.24084198">10.5281/zenodo.24084198</a>.</p></li>
+<li><p><span id="ref:GoodfellowEtAl2014"
+data-label="ref:GoodfellowEtAl2014"></span> I. J. Goodfellow,
+J. Pouget-Abadie, M. Mirza, B. Xu, D. Warde-Farley, S. Ozair,
+A. Courville, and Y. Bengio, <em>Generative Adversarial Nets</em>,
+Advances in Neural Information Processing Systems <strong>27</strong>
+(2014). <a
+href="https://proceedings.neurips.cc/paper/2014/hash/f033ed80deb0234979a61f95710dbe25-Abstract.html"
+class="uri">https://proceedings.neurips.cc/paper/2014/hash/f033ed80deb0234979a61f95710dbe25-Abstract.html</a>.</p></li>
+<li><p><span id="ref:KingmaWelling2014"
+data-label="ref:KingmaWelling2014"></span> D. P. Kingma and M. Welling,
+<em>Auto-Encoding Variational Bayes</em>, ICLR, 2014. <a
+href="https://arxiv.org/abs/1312.6114"
+class="uri">https://arxiv.org/abs/1312.6114</a>.</p></li>
+<li><p><span id="ref:BelkinEtAl2019"
+data-label="ref:BelkinEtAl2019"></span> M. Belkin, D. Hsu, S. Ma, and
+S. Mandal, <em>Reconciling modern machine learning practice and the
+bias-variance trade-off</em>, Proceedings of the National Academy of
+Sciences, 2019. DOI: <a
+href="https://doi.org/10.1073/pnas.1903070116">10.1073/pnas.1903070116</a>.</p></li>
+<li><p><span id="ref:NakkiranEtAl2020"
+data-label="ref:NakkiranEtAl2020"></span> P. Nakkiran, G. Kaplun,
+Y. Bansal, T. Yang, B. Barak, and I. Sutskever, <em>Deep Double Descent:
+Where Bigger Models and More Data Hurt</em>, ICLR, 2020. <a
+href="https://arxiv.org/abs/1912.02292"
+class="uri">https://arxiv.org/abs/1912.02292</a>.</p></li>
+</ol>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>After epoch 30,000, updates use the exact empirical
+conditional-mean velocity to reduce gradient noise. This has the same
+Flow Matching optimum; the plotted losses keep the original conditional
+regression definition.<a href="#fnref1" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</article></main></body></html>
