@@ -40,3 +40,16 @@ python3 scripts/build_flow_matching_note.py
 
 MathJax is served locally from `assets/vendor/`; equation rendering does not
 require a third-party CDN.
+
+## Mathematical Knowledge Map
+
+The map is a static page in `mathematical-knowledge-map/`. Its JSON data,
+graph layout and viewer are imported from the Math Mapping application's
+existing export. To refresh them after regenerating that export:
+
+```sh
+python3 scripts/build_math_map.py /path/to/math_mapping/code/output/mathematics.html
+```
+
+The importer removes local absolute paths. Commit the regenerated files
+alongside the page and its stylesheet. Visitors do not need Python.

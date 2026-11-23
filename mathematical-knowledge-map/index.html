@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mathematical Knowledge Map | Pierre Guilbert</title>
+<meta name="author" content="Pierre Guilbert">
+<meta name="description" content="A personal map of mathematical axioms, definitions and theorems, organised by domain and theory, starting from Bourbaki’s books.">
+<link rel="stylesheet" href="../cv.css"><link rel="stylesheet" href="map.css">
+<script>window.PlotlyConfig={MathJaxConfig:'local'};window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'local'}};</script>
+<script defer src="../assets/vendor/plotly.min.js"></script>
+<script defer src="../assets/vendor/mathjax-tex-svg.js"></script>
+<script defer src="graph-init.js"></script><script defer src="map.js"></script>
+</head><body>
+<main class="map-page">
+<nav aria-label="Page navigation"><a href="../index.html">Home</a><a href="../projects.html">Projects and Software</a></nav>
+<header class="map-header">
+  <div class="eyebrow">Pierre Guilbert · Personal project</div>
+  <h1>Mathematical Knowledge Map</h1>
+  <p class="map-intro">This personal project grew out of parsing Bourbaki’s books to build a map of mathematical axioms, definitions and theorems, organised by domain and theory. Explore a concept to discover its connections.</p>
+  <p class="muted" id="counts"></p>
+  <div class="toolbar">
+    <input id="search" type="search" list="entries" placeholder="Find a concept or an ID…" aria-label="Find a concept">
+    <datalist id="entries"></datalist>
+    <label><input type="checkbox" data-category="axiom" checked><span class="dot" style="background:#2563eb"></span>Axioms</label>
+    <label><input type="checkbox" data-category="definition" checked><span class="dot" style="background:#16a34a"></span>Definitions</label>
+    <label><input type="checkbox" data-category="theorem" checked><span class="dot" style="background:#dc2626"></span>Theorems</label>
+    <span id="sections" style="display:inline-flex;gap:12px;flex-wrap:wrap"></span>
+    <label><input id="names" type="checkbox">Show names</label>
+    <label><input id="domains" type="checkbox" checked>Domain boundaries</label>
+    <label><input id="context" type="checkbox">Context links</label>
+    <label><input id="indirect" type="checkbox">Include indirect prerequisites</label>
+    <button id="reset">Reset view</button>
+  </div>
+  <div id="search-status" role="status" aria-live="polite"></div>
+</header>
+<section class="map-workspace" aria-label="Knowledge map explorer">
+  <section class="canvas" aria-label="Interactive directed graph">
+    <noscript>This interactive map needs JavaScript enabled.</noscript>
+    <div id="plot"><div id="knowledge-graph"></div></div>
+    <div class="hint">Drag to pan · Scroll to zoom · Click a node to follow its connections</div>
+  </section>
+  <aside id="details" aria-label="Entry details" aria-live="polite"></aside>
+</section>
+<footer>Arrows point from a prerequisite to an entry that uses it. Selected conceptual and proof links; this is not a complete proof graph.</footer>
+</main>
+</body></html>
