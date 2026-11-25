@@ -70,7 +70,7 @@ startMap().catch(error => {
 out=ROOT/'mathematical-knowledge-map';out.mkdir(exist_ok=True)
 (ROOT/'assets/vendor/plotly.min.js').write_text(library)
 init=init.replace('Plotly.newPlot(', 'window.mapReady = Plotly.newPlot(',1)
-(out/'graph-init.js').write_text(init)
+(out/'graph-init.js').write_text(init.rstrip()+'\n')
 (out/'map.js').write_text(wrapped)
 data=public_data(json.loads(a.export.with_suffix('.json').read_text()))
 (out/'data.json').write_text(json.dumps(data,ensure_ascii=False,separators=(',',':'))+'\n')
